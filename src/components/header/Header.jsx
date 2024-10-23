@@ -74,8 +74,12 @@ const Header = () => {
         </div>
       </div>
 
-      <div className={`md:hidden ${mobileMenuOpen ? "block" : "hidden"}`}>
-        <div className="px-2 pt-2 pb-3 space-y-1 bg-white border-b border-gray-200">
+      <div
+        className={`md:hidden ${
+          mobileMenuOpen ? "absolute top-16 inset-x-0 z-50 block" : "hidden"
+        } bg-white`}
+      >
+        <div className="px-2 pt-2 pb-3 space-y-1 border-b border-gray-200">
           {navItems.map((item) => (
             <Link
               key={item.name}
