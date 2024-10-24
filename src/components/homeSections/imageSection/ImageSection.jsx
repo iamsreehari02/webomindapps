@@ -97,13 +97,12 @@ export default function Component() {
         : (activeIndex - 1 + imageSectionData.length) % imageSectionData.length;
 
     setActiveIndex(newIndex);
-    setSelectedImage(imageSectionData[newIndex]); // Update selected image
+    setSelectedImage(imageSectionData[newIndex]);
 
     const newSelectedImageRef = imageRefs.current[newIndex];
     const previousSelectedImageRef = imageRefs.current[activeIndex];
     const containerRect = containerRef.current.getBoundingClientRect();
 
-    // Animate out the previous image
     gsap.to(previousSelectedImageRef, {
       y: containerRect.height / 2,
       x: -containerRect.width / 3,
@@ -113,7 +112,6 @@ export default function Component() {
       ease: POWER3_INOUT,
     });
 
-    // Animate in the new image
     gsap.to(newSelectedImageRef, {
       y: 0,
       x: -containerRect.width / 4,
@@ -124,7 +122,6 @@ export default function Component() {
       ease: POWER3_INOUT,
     });
 
-    // Fade out and in the content
     gsap.to(contentRef.current, {
       opacity: 0,
       duration: 0.2,
