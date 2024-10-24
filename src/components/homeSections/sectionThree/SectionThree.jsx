@@ -7,23 +7,24 @@ import Footer from "@/components/footer/Footer";
 const SectionThree = () => {
   return (
     <div
-      className={`${styles.sectionThreeContainer} flex flex-col items-center justify-center min-h-screen text-center px-4`}
+      className={`${styles.sectionThreeContainer} flex flex-col items-center justify-center min-h- px-4`}
     >
-      <div className="w-[60%] mx-auto flex flex-col justify-center">
+      <div
+        className={`${styles.contents} w-[60%] mx-auto flex flex-col justify-center`}
+      >
         <h1>{SECTION_THREE.HEADING}</h1>
         <p className="my-6">{SECTION_THREE.PARA}</p>
         <div className="mx-auto">
           <CommonButton
             label={BUTTON_LABELS.LETS_TALK}
             backgroundColor={WHITE}
-            fontColor="#003DB8"
+            fontColor={LIGHT_BLUE}
             arrowColor={LIGHT_BLUE}
           />
         </div>
       </div>
-      <div className={styles.footer}>
-        <Footer />
-      </div>
+      <div className="pb-20"></div>
+      <Footer />
     </div>
   );
 };

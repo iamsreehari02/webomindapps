@@ -2,15 +2,17 @@
   background-color: #011740;
   background-image: url("/public/images/circles.png");
   position: relative;
-  background-size: contain; /* or 'cover', depending on your design */
+  background-size: contain;
   background-position: center;
   background-repeat: no-repeat;
   min-height: 100vh;
+  padding-top: 5rem;
 }
 
-.sectionThreeContainer h1,
-.sectionThreeContainer p {
+.contents h1,
+.contents p {
   color: white;
+  text-align: center;
 }
 
 .footer {

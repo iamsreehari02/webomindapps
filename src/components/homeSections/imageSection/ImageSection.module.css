@@ -1,0 +1,11 @@
+.contentContainer h2,
+.contentContainer p {
+  text-align: right;
+}
+
+.contentContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  justify-content: end;
+}

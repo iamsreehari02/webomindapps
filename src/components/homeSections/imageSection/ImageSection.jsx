@@ -1,94 +1,71 @@
 "use client";
-
 import React, { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import Image from "next/image";
-
-const images = [
-  {
-    id: 1,
-    src: "/images/IMG1.png",
-    alt: "Image 1",
-    data: "Data for Image 1",
-  },
-  {
-    id: 2,
-    src: "/placeholder.svg?height=300&width=300",
-    alt: "Image 2",
-    data: "Data for Image 2",
-  },
-  {
-    id: 3,
-    src: "/placeholder.svg?height=300&width=300",
-    alt: "Image 3",
-    data: "Data for Image 3",
-  },
-  {
-    id: 4,
-    src: "/placeholder.svg?height=300&width=300",
-    alt: "Image 4",
-    data: "Data for Image 4",
-  },
-  {
-    id: 5,
-    src: "/placeholder.svg?height=300&width=300",
-    alt: "Image 5",
-    data: "Data for Image 5",
-  },
-];
+import { imageSectionData } from "@/utils/data";
+import CommonButton from "@/components/commonButton/CommonButton";
+import styles from "./ImageSection.module.css";
+import { HEADING, POWER3_INOUT, WHEEL } from "@/constants";
 
 export default function Component() {
   const [selectedImage, setSelectedImage] = useState(null);
+  const [activeIndex, setActiveIndex] = useState(0);
   const imageRefs = useRef([]);
   const contentRef = useRef(null);
   const containerRef = useRef(null);
+  const selectedImageContainerRef = useRef(null);
 
   useEffect(() => {
-    // Initial stacked animation
-    gsap.set(imageRefs.current, { y: (i) => i * 20, scale: 1, opacity: 1 });
+    gsap.set(imageRefs.current, {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      x: (i) => i * 50,
+      y: (i) => i * 50,
+      scale: 1,
+      opacity: 1,
+      rotationY: (i) => i * 10 - 20,
+      zIndex: (i) => imageSectionData.length - i,
+      transformOrigin: "right center",
+    });
+
     gsap.from(imageRefs.current, {
-      y: (i) => i * 40,
+      x: (i) => i * 90,
+      y: (i) => i * 20,
       opacity: 0,
-      duration: 0.5,
+      duration: 0.8,
       stagger: 0.1,
-      ease: "power3.out",
+      ease: POWER3_INOUT,
     });
   }, []);
 
-  const handleImageClick = (image) => {
-    if (selectedImage) return; // Prevent clicking while animating
-
+  const handleImageClick = (image, index) => {
     setSelectedImage(image);
-    const selectedImageRef = imageRefs.current[image.id - 1];
+    setActiveIndex(index);
+    const selectedImageRef = imageRefs.current[index];
     const containerRect = containerRef.current.getBoundingClientRect();
-    const imageRect = selectedImageRef.getBoundingClientRect();
 
-    // Calculate the target position (right side of the container)
-    const targetX = containerRect.width / 2 - imageRect.width / 2;
-
-    // Animate unselected images
-    imageRefs.current.forEach((ref, index) => {
-      if (index !== image.id - 1) {
+    imageRefs.current.forEach((ref, idx) => {
+      if (idx !== index) {
         gsap.to(ref, {
-          y: 0,
-          x: -containerRect.width / 2 + imageRect.width / 2,
+          y: containerRect.height / 2,
+          x: -containerRect.width / 3,
           opacity: 0,
           scale: 0.8,
           duration: 0.5,
-          ease: "power3.inOut",
+          ease: POWER3_INOUT,
         });
       }
     });
 
-    // Animate selected image
     gsap.to(selectedImageRef, {
       y: 0,
-      x: targetX,
-      scale: 1.5,
+      x: -containerRect.width / 4,
+      rotationY: 0,
+      scale: 1.2,
       duration: 0.5,
-      ease: "power3.inOut",
+      ease: POWER3_INOUT,
       onComplete: () => {
-        // Show content
         gsap.to(contentRef.current, { opacity: 1, duration: 0.3, delay: 0.2 });
       },
     });
@@ -96,63 +73,146 @@ export default function Component() {
 
   const handleReset = () => {
     setSelectedImage(null);
+    setActiveIndex(0);
+
     gsap.to(imageRefs.current, {
-      x: 0,
-      y: (i) => i * 20,
+      x: (i) => i * 50,
+      y: (i) => i * 50,
       scale: 1,
       opacity: 1,
+      rotationY: (i) => i * 10 - 20,
       duration: 0.5,
       stagger: 0.1,
-      ease: "power3.out",
+      ease: POWER3_INOUT,
     });
     gsap.to(contentRef.current, { opacity: 0, duration: 0.3 });
   };
 
+  const handleScrollOnImage = (e) => {
+    e.preventDefault();
+    const delta = e.deltaY;
+    const newIndex =
+      delta > 0
+        ? (activeIndex + 1) % imageSectionData.length
+        : (activeIndex - 1 + imageSectionData.length) % imageSectionData.length;
+
+    setActiveIndex(newIndex);
+    const newSelectedImageRef = imageRefs.current[newIndex];
+
+    gsap.to(newSelectedImageRef, {
+      y: 0,
+      x: -containerRef.current.getBoundingClientRect().width / 4,
+      rotationY: 0,
+      scale: 1.2,
+      duration: 0.5,
+      ease: POWER3_INOUT,
+    });
+
+    const previousSelectedImageRef = imageRefs.current[activeIndex];
+    gsap.to(previousSelectedImageRef, {
+      y: containerRef.current.getBoundingClientRect().height / 2,
+      x: -containerRef.current.getBoundingClientRect().width / 3,
+      opacity: 0,
+      scale: 0.8,
+      duration: 0.5,
+      ease: POWER3_INOUT,
+    });
+
+    setSelectedImage(imageSectionData[newIndex]);
+
+    // Update the content with a fade effect
+    gsap.to(contentRef.current, { opacity: 0, duration: 0.2 }).then(() => {
+      gsap.to(contentRef.current, {
+        opacity: 1,
+        duration: 0.3,
+      });
+    });
+  };
+
+  useEffect(() => {
+    if (selectedImage) {
+      const selectedContainer = selectedImageContainerRef.current;
+      selectedContainer.addEventListener(WHEEL, handleScrollOnImage, {
+        passive: false,
+      });
+    }
+
+    return () => {
+      if (selectedImageContainerRef.current) {
+        selectedImageContainerRef.current.removeEventListener(
+          WHEEL,
+          handleScrollOnImage
+        );
+      }
+    };
+  }, [selectedImage, activeIndex]);
+
   return (
     <div
-      className="flex min-h-screen items-center justify-center bg-gray-100"
+      className="relative h-screen w-screen bg-white overflow-hidden max-w-7xl mx-auto px-4 py-12 sm:px-6 lg:px-8"
       ref={containerRef}
+      style={{ perspective: "1000px", minHeight: "1000px" }}
     >
-      <div className="relative h-[400px] w-[600px]">
-        {/* Stacked Images */}
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-          {images.map((image, index) => (
+      <h1 className="text-right max-w-[80%] ml-auto">
+        {HEADING.MAIN} <span className="font_red">{HEADING.SPAN}</span>
+      </h1>
+
+      <div className="absolute left-1/2 top-1/3 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center">
+        <div
+          ref={selectedImageContainerRef}
+          className="relative h-[300px] w-[400px] flex items-center justify-center"
+        >
+          {imageSectionData.map((image, index) => (
             <div
               key={image.id}
               ref={(el) => (imageRefs.current[index] = el)}
-              onClick={() => handleImageClick(image)}
-              className="absolute cursor-pointer transition-shadow hover:shadow-lg"
+              onClick={() => handleImageClick(image, index)}
+              className={`absolute cursor-pointer transition-shadow hover:shadow-lg ${
+                activeIndex === index ? "opacity-1" : "opacity-0"
+              }`}
+              style={{
+                zIndex: imageSectionData.length - index,
+                top: `${index * 20}px`,
+                left: `${index * 20}px`,
+              }}
             >
               <Image
-                src={image.src}
+                src={
+                  activeIndex === index && selectedImage
+                    ? selectedImage.selectedSrc
+                    : image.src
+                }
                 alt={image.alt}
-                width={200}
-                height={200}
+                width={400}
+                height={300}
                 className="rounded-lg object-cover"
+                priority={index === 0}
                 unoptimized
               />
             </div>
           ))}
         </div>
+      </div>
 
-        {/* Content */}
-        <div
-          ref={contentRef}
-          className="absolute right-0 top-1/2 w-1/2 -translate-y-1/2 space-y-4 rounded-lg bg-white p-6 opacity-0 shadow-xl"
-        >
-          {selectedImage && (
-            <>
-              <h2 className="text-2xl font-bold">{selectedImage.alt}</h2>
-              <p>{selectedImage.data}</p>
-              <button
+      <div
+        ref={contentRef}
+        className={`${styles.contentContainer} absolute right-0 top-1/2 w-1/3 -translate-y-1/2 space-y-4 rounded-lg p-8 opacity-0`}
+      >
+        {selectedImage && (
+          <>
+            <h2 className="text-3xl font-bold">
+              {selectedImage.heading}{" "}
+              <span className="font_red">{selectedImage.fontRed}</span>
+            </h2>
+            <p className="text-lg">{selectedImage.para}</p>
+            <div className="ml-auto">
+              <CommonButton
                 onClick={handleReset}
-                className="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
-              >
-                Back to Stack
-              </button>
-            </>
-          )}
-        </div>
+                label={selectedImage.buttonLabel}
+              />
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
