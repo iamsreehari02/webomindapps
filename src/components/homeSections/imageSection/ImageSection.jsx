@@ -97,35 +97,43 @@ export default function Component() {
         : (activeIndex - 1 + imageSectionData.length) % imageSectionData.length;
 
     setActiveIndex(newIndex);
+    setSelectedImage(imageSectionData[newIndex]); // Update selected image
+
     const newSelectedImageRef = imageRefs.current[newIndex];
-
-    gsap.to(newSelectedImageRef, {
-      y: 0,
-      x: -containerRef.current.getBoundingClientRect().width / 4,
-      rotationY: 0,
-      scale: 1.2,
-      duration: 0.5,
-      ease: POWER3_INOUT,
-    });
-
     const previousSelectedImageRef = imageRefs.current[activeIndex];
+    const containerRect = containerRef.current.getBoundingClientRect();
+
+    // Animate out the previous image
     gsap.to(previousSelectedImageRef, {
-      y: containerRef.current.getBoundingClientRect().height / 2,
-      x: -containerRef.current.getBoundingClientRect().width / 3,
+      y: containerRect.height / 2,
+      x: -containerRect.width / 3,
       opacity: 0,
       scale: 0.8,
       duration: 0.5,
       ease: POWER3_INOUT,
     });
 
-    setSelectedImage(imageSectionData[newIndex]);
+    // Animate in the new image
+    gsap.to(newSelectedImageRef, {
+      y: 0,
+      x: -containerRect.width / 4,
+      rotationY: 0,
+      scale: 1.2,
+      opacity: 1,
+      duration: 0.5,
+      ease: POWER3_INOUT,
+    });
 
-    // Update the content with a fade effect
-    gsap.to(contentRef.current, { opacity: 0, duration: 0.2 }).then(() => {
-      gsap.to(contentRef.current, {
-        opacity: 1,
-        duration: 0.3,
-      });
+    // Fade out and in the content
+    gsap.to(contentRef.current, {
+      opacity: 0,
+      duration: 0.2,
+      onComplete: () => {
+        gsap.to(contentRef.current, {
+          opacity: 1,
+          duration: 0.3,
+        });
+      },
     });
   };
 
@@ -167,21 +175,16 @@ export default function Component() {
               key={image.id}
               ref={(el) => (imageRefs.current[index] = el)}
               onClick={() => handleImageClick(image, index)}
-              className={`absolute cursor-pointer transition-shadow hover:shadow-lg ${
-                activeIndex === index ? "opacity-1" : "opacity-0"
-              }`}
+              className="absolute cursor-pointer transition-shadow hover:shadow-lg"
               style={{
                 zIndex: imageSectionData.length - index,
                 top: `${index * 20}px`,
                 left: `${index * 20}px`,
+                opacity: selectedImage ? (activeIndex === index ? 1 : 0) : 1,
               }}
             >
               <Image
-                src={
-                  activeIndex === index && selectedImage
-                    ? selectedImage.selectedSrc
-                    : image.src
-                }
+                src={image.selectedSrc || image.src}
                 alt={image.alt}
                 width={400}
                 height={300}
